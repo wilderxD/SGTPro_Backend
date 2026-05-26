@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,10 +31,11 @@ public class CatalogoInsumoController {
     
     private final ICatalogoInsumoService insumoService;
 
-   private CatalogoInsumoController(ICatalogoInsumoService insumoService) {
+    public CatalogoInsumoController(ICatalogoInsumoService insumoService) {
         this.insumoService = insumoService;
     }
     
+   @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO', 'ROLE_MECANICO', 'ROLE_LOGISTICA')")
     @Operation(summary = "Listar Insumos", description = "Retorna una lista de todos los insumos registrados en la base de datos.")
     @GetMapping
     public ResponseEntity<List<CatalogoInsumoDTO>> listarCatalogoInsumos(){
@@ -41,6 +43,7 @@ public class CatalogoInsumoController {
         return ResponseEntity.ok(insumosDTO);
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO', 'ROLE_MECANICO', 'ROLE_LOGISTICA')")
     @Operation(summary = "Listar Insumos", description = "Retorna todos los Insumos registrados paginados de 8 insumos cada pagina, requiere un dato de tipo entero el cual es el numero de pagina.")
     @GetMapping("/paginado")
     public ResponseEntity<Page<CatalogoInsumoDTO>> listarCatalogoInsumosPaginado(@RequestParam int page){
@@ -50,18 +53,21 @@ public class CatalogoInsumoController {
         return ResponseEntity.ok(respuesta);
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_LOGISTICA', 'ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO')")
     @Operation(summary = "Registrar un nuevo Insumo", description = "Valida y registra un nuevo Insumo en la base de taos, requiere un DTO de CatalogoInsumo.")
     @PostMapping
     public ResponseEntity<CatalogoInsumoDTO> guardarInsumo(@Valid @RequestBody CatalogoInsumoDTO dto){
         return ResponseEntity.status(HttpStatus.CREATED).body(insumoService.crearInsumo(dto));
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO', 'ROLE_MECANICO', 'ROLE_LOGISTICA')")
     @Operation(summary = "Buscar un Insumo", description = "Retorna un Insumo buscado por el id, requiere un dato de tipo Integer id para la busqueda.")
     @GetMapping("/{id}")
     public ResponseEntity<CatalogoInsumoDTO> buscarPorId(@PathVariable Integer id){
         return ResponseEntity.ok(insumoService.buscarPorId(id));
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_LOGISTICA', 'ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO')")
     @Operation(summary = "Actualizar un Insumo", description = "Valida y actualiza los datos de un insumo en la base de datos, requiere un dato de tipo Integer id y un DTO de CatalogoInsumo para la actualización")
     @PutMapping("/{id}")
     public ResponseEntity<CatalogoInsumoDTO> actualizarInsumo(@Valid @PathVariable Integer id, @RequestBody CatalogoInsumoDTO insumoEditado){
@@ -70,6 +76,7 @@ public class CatalogoInsumoController {
         return ResponseEntity.ok(insumoActualizado);
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_LOGISTICA', 'ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO')")
     @Operation(summary = "Elimina un Insumo", description = "Valida y elimina un Insumo en la base de datos, requiere un dato de tipo Integer id para su eliminación.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarInsumo(@PathVariable Integer id){

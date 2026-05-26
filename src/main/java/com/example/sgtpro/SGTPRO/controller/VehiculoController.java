@@ -14,6 +14,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +37,7 @@ public class VehiculoController {
         this.vehiculoService = vehiculoService;
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO', 'ROLE_MECANICO', 'ROLE_LOGISTICA')")
     @Operation(summary = "Listar flota", description = "Retorna todos los vehículos registrados sin paginación.")
     @GetMapping
     public ResponseEntity<List<VehiculoDTO>> listarVehiculos(){
@@ -45,6 +47,7 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculosDTO);
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO', 'ROLE_MECANICO', 'ROLE_LOGISTICA')")
     @Operation(summary = "Listar flota", description = "Retorna todos los vehiculos registrados paginados de 8 vehiculos cada pagina, requiere un dato de tipo entero el cual es el numero de pagina")
     @GetMapping("/paginado")
     public ResponseEntity<Page<VehiculoDTO>> listarPaginado(@RequestParam int page){
@@ -55,6 +58,7 @@ public class VehiculoController {
         return ResponseEntity.ok(respuestas);
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO')")
     @Operation(summary = "Registrar nuevo camion", description = "Valida y registra un nuevo vehículo en la base de datos, requiere un DTO de vehiculo.")
     @PostMapping
     public ResponseEntity<VehiculoDTO> guardarVehiculo(@Valid @RequestBody VehiculoDTO vehiculoDTO){
@@ -62,12 +66,14 @@ public class VehiculoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(vehiculoService.guardar(vehiculoDTO));        
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO', 'ROLE_MECANICO', 'ROLE_LOGISTICA')")
     @Operation(summary = "Buscar un camion", description = "Retorna el camion buscado por placa, requiere un dato de tipo String placa para la busqueda(BAZ-911)")
     @GetMapping("/{placa}")
     public ResponseEntity<VehiculoDTO> obtenerUnVehiculo(@PathVariable String placa){
         return ResponseEntity.ok(vehiculoService.obtenerPorPlaca(placa));
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO')")
     @Operation(summary = "Actualiza un vehiculo", description = "Valida y actualiza los datos de un vehículo en la base de datos, requiere un dato de tipo String  placa para la actualizacion(BAZ-911) y un DTO de Vehiculo.")
     @PutMapping("/{placa}")
     public ResponseEntity<VehiculoDTO> actualizarVehiculo(@Valid @RequestBody VehiculoDTO vehiculoEditado, @PathVariable String placa){
@@ -76,6 +82,7 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculoActualizado);
     }
     
+    @PreAuthorize("hasAnyAuthority('ROLE_JEFE_TALLER', 'ROLE_JEFE_DIRECTO')")
     @Operation(summary = "Elimina un vehiculo", description = "Valida y elimina un vehículo en la base de datos, requiere un dato de tipo String  placa para la eliminación(BAZ-911).")
     @DeleteMapping("/{placa}")
     public ResponseEntity<Void> eliminarVehiculo(@PathVariable String placa){
