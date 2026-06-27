@@ -13,6 +13,7 @@ public class VehiculoMapper {
         vehiculo.setMarca(dto.getMarca());
         vehiculo.setModelo(dto.getModelo());
         vehiculo.setKilometrajeActual(dto.getKilometrajeActual());
+        vehiculo.setProximoMantenimientoKm(dto.getProximoMantenimientoKm());
         
         return vehiculo;
     }
@@ -23,6 +24,7 @@ public class VehiculoMapper {
                 .marca(vehiculo.getMarca())
                 .modelo(vehiculo.getModelo())
                 .kilometrajeActual(vehiculo.getKilometrajeActual())
+                .proximoMantenimientoKm(vehiculo.getProximoMantenimientoKm())
                 .build();
     }
     

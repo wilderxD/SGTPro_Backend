@@ -1,5 +1,6 @@
 package com.example.sgtpro.SGTPRO.controller;
 
+import com.example.sgtpro.SGTPRO.dto.RolDTO;
 import com.example.sgtpro.SGTPRO.dto.UsuarioDTO;
 import com.example.sgtpro.SGTPRO.entity.Rol;
 import com.example.sgtpro.SGTPRO.service.IUsuarioService;
@@ -57,12 +58,13 @@ public class UsuarioControllerTest {
         rolPrueba.setIdRol(1);
         rolPrueba.setNombre("ROLE_JEFE_TALLER");
 
+        RolDTO rolDTO = new RolDTO(rolPrueba.getIdRol(), rolPrueba.getNombre(), rolPrueba.getDescripcion());
         usuarioDTOPrueba = UsuarioDTO.builder()
                 .idUsuario(1)
                 .nombreCompleto("Carlos Administrador")
                 .correo("admin@forli.com.pe")
                 .password("123456")
-                .rol(rolPrueba)
+                .rol(rolDTO)
                 .build();
     }
 
@@ -126,17 +128,18 @@ public class UsuarioControllerTest {
 
     @Test
     void actualizarUsuario_DebeRetornarStatus200_YUsuarioActualizadoJSON() throws Exception {
+        RolDTO rolDTO2 = new RolDTO(rolPrueba.getIdRol(), rolPrueba.getNombre(), rolPrueba.getDescripcion());
         UsuarioDTO datosActualizados = UsuarioDTO.builder()
                 .nombreCompleto("Carlos Jefe Editado")
                 .correo("admin@forli.com.pe")
-                .rol(rolPrueba)
+                .rol(rolDTO2)
                 .build();
 
         UsuarioDTO usuarioFinalDTO = UsuarioDTO.builder()
                 .idUsuario(1)
                 .nombreCompleto("Carlos Jefe Editado")
                 .correo("admin@forli.com.pe")
-                .rol(rolPrueba)
+                .rol(rolDTO2)
                 .build();
 
         when(usuarioService.actualizarUsuario(eq(1), any(UsuarioDTO.class))).thenReturn(usuarioFinalDTO);

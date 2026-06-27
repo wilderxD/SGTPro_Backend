@@ -4,6 +4,7 @@ import com.example.sgtpro.SGTPRO.dto.VehiculoDTO;
 import com.example.sgtpro.SGTPRO.entity.Vehiculo;
 import com.example.sgtpro.SGTPRO.exception.BadRequestException;
 import com.example.sgtpro.SGTPRO.exception.ResourceNotFoundException;
+import org.junit.jupiter.api.Assertions;
 import com.example.sgtpro.SGTPRO.mapper.VehiculoMapper;
 import com.example.sgtpro.SGTPRO.repository.VehiculoRepository;
 import java.util.List;
@@ -73,14 +74,14 @@ public class VehiculoServiceTest {
     }
 
     @Test
-    void ObtenerTodosPaginado_DebeRetornarPaginaDeVehiculos() {
+    void obtenerTodosPaginado_DebeRetornarPaginaDeVehiculos() {
         Pageable pageable = PageRequest.of(0, 10);
         Page<Vehiculo> paginaVehiculos = new PageImpl<>(List.of(vehiculoPrueba));
         
         when(vehiculoRepository.findAll(pageable)).thenReturn(paginaVehiculos);
         when(vehiculoMapper.toDTO(any(Vehiculo.class))).thenReturn(vehiculoDTOPrueba);
 
-        Page<VehiculoDTO> resultado = vehiculoService.ObtenerTodosPaginado(pageable);
+        Page<VehiculoDTO> resultado = vehiculoService.obtenerTodosPaginado(pageable);
 
         assertNotNull(resultado);
         assertEquals(1, resultado.getTotalElements());
@@ -168,10 +169,10 @@ public class VehiculoServiceTest {
     }
 
     @Test
-    void eliminarPorPlaca_DebeLanzarRuntimeException_CuandoNoExiste() {
+    void eliminarPorPlaca_DebeLanzarResourceNotFound_CuandoNoExiste() {
         when(vehiculoRepository.existsById("XYZ-999")).thenReturn(false);
 
-        RuntimeException excepcion = assertThrows(RuntimeException.class, () -> {
+        ResourceNotFoundException excepcion = assertThrows(ResourceNotFoundException.class, () -> {
             vehiculoService.eliminarPorPlaca("XYZ-999");
         });
 

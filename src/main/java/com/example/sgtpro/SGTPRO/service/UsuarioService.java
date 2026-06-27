@@ -36,7 +36,7 @@ public class UsuarioService implements IUsuarioService{
     @Transactional(readOnly = true)
     public List<UsuarioDTO> listarUsuarios() {
                 
-        List<UsuarioDTO> listaDTO = usuarioRepository.findAll().stream()
+        List<UsuarioDTO> listaDTO = usuarioRepository.findAllActivos().stream()
                 .map(usuarioMapper::toDTO)
                 .collect(Collectors.toList());
         
@@ -45,9 +45,9 @@ public class UsuarioService implements IUsuarioService{
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UsuarioDTO> listarUsuariosPaginado(Pageable pageable) {
+    public Page<UsuarioDTO> listarUsuariosPaginado(String search, Pageable pageable) {
         
-        Page<Usuario> listaUsuarios = usuarioRepository.findAll(pageable);
+        Page<Usuario> listaUsuarios = usuarioRepository.findFiltered(search, pageable);
         
         return listaUsuarios.map(usuarioMapper::toDTO);
     }
@@ -61,14 +61,9 @@ public class UsuarioService implements IUsuarioService{
         
         Rol rol = rolRepository.findById(dto.getRol().getIdRol()).orElseThrow(() -> new BadRequestException("El rol especificado no existe."));
         
-        UsuarioDTO usuarioDTO = UsuarioDTO.builder()
-                .rol(rol)
-                .correo(dto.getCorreo())
-                .nombreCompleto(dto.getNombreCompleto())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .build();                
-                
-        Usuario usuario = usuarioMapper.toEntity(usuarioDTO);
+        Usuario usuario = usuarioMapper.toEntity(dto);
+        usuario.setRol(rol);
+        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
         
         return usuarioMapper.toDTO(usuarioRepository.save(usuario));
     }
@@ -76,31 +71,49 @@ public class UsuarioService implements IUsuarioService{
     @Override
     @Transactional
     public UsuarioDTO actualizarUsuario(Integer idUsuario, UsuarioDTO dtoEditado) {
-        UsuarioDTO usuarioDTO = buscarPorId(idUsuario);
+        Usuario usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + idUsuario));
         
-        UsuarioDTO usuarioActualizado = UsuarioDTO.builder()
-                .idUsuario(idUsuario)
-                .rol(dtoEditado.getRol() != null ? dtoEditado.getRol() : usuarioDTO.getRol())
-                .nombreCompleto(dtoEditado.getNombreCompleto() != null ? dtoEditado.getNombreCompleto() : usuarioDTO.getNombreCompleto())
-                .correo(dtoEditado.getCorreo() != null ? dtoEditado.getCorreo() : usuarioDTO.getCorreo())
-                .password(usuarioDTO.getPassword())
-                .build();
+        if (dtoEditado.getRol() != null) {
+            Rol rol = rolRepository.findById(dtoEditado.getRol().getIdRol())
+                    .orElseThrow(() -> new BadRequestException("El rol especificado no existe."));
+            usuario.setRol(rol);
+        }
+        if (dtoEditado.getNombreCompleto() != null) {
+            usuario.setNombreCompleto(dtoEditado.getNombreCompleto());
+        }
+        if (dtoEditado.getCorreo() != null) {
+            if (!dtoEditado.getCorreo().equals(usuario.getCorreo())
+                    && usuarioRepository.findByCorreo(dtoEditado.getCorreo()).isPresent()) {
+                throw new BadRequestException("El correo " + dtoEditado.getCorreo() + " ya está registrado por otro usuario.");
+            }
+            usuario.setCorreo(dtoEditado.getCorreo());
+        }
         
-        return usuarioMapper.toDTO(usuarioRepository.save(usuarioMapper.toEntity(usuarioActualizado)));
+        return usuarioMapper.toDTO(usuarioRepository.save(usuario));
     }
 
     @Override
     @Transactional(readOnly = true)
     public UsuarioDTO buscarPorId(Integer id) {
-        return usuarioMapper.toDTO(usuarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuario no encoantrado con id: " + id)));
+        return usuarioMapper.toDTO(usuarioRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado con id: " + id)));
     }
 
     @Override
+    @Transactional
     public void eliminarPorID(Integer id) {
-        if(!usuarioRepository.existsById(id)){
-            throw new RuntimeException("No se puede eliminar: El usuario con id " + id + " no existe en la base de datos.");
-        }
-        usuarioRepository.deleteById(id);
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No se puede eliminar: El usuario con id " + id + " no existe en la base de datos."));
+        usuario.setActivo(false);
+        usuarioRepository.save(usuario);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UsuarioDTO> listarUsuariosPorRol(String nombreRol) {
+        return usuarioRepository.findByRolNombre(nombreRol).stream()
+                .map(usuarioMapper::toDTO)
+                .toList();
     }
     
 }

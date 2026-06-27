@@ -6,10 +6,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface IUsuarioService {
+
     public List<UsuarioDTO> listarUsuarios();
-    public Page<UsuarioDTO> listarUsuariosPaginado(Pageable pageable);
+
+    public Page<UsuarioDTO> listarUsuariosPaginado(String search, Pageable pageable);
+
     public UsuarioDTO guardarUsuario(UsuarioDTO dto);
+
     public UsuarioDTO actualizarUsuario(Integer idUsuario, UsuarioDTO dtoEditado);
+
     public UsuarioDTO buscarPorId(Integer id);
+
     public void eliminarPorID(Integer id);
+
+    public List<UsuarioDTO> listarUsuariosPorRol(String nombreRol);
+    
 }

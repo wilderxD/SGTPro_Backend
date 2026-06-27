@@ -6,8 +6,8 @@ import com.example.sgtpro.SGTPRO.exception.BadRequestException;
 import com.example.sgtpro.SGTPRO.exception.ResourceNotFoundException;
 import com.example.sgtpro.SGTPRO.mapper.CatalogoInsumoMapper;
 import com.example.sgtpro.SGTPRO.repository.CatalogoInsumoRepository;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,8 +37,8 @@ public class CatalogoInsumoService implements ICatalogoInsumoService{
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CatalogoInsumoDTO> listarCatalogoInsumosPaginado(Pageable pageable) {
-        Page<CatalogoInsumo> listaInsumos = insumoRepository.findAll(pageable);
+    public Page<CatalogoInsumoDTO> listarCatalogoInsumosPaginado(String search, Pageable pageable) {
+        Page<CatalogoInsumo> listaInsumos = insumoRepository.findFiltered(search, pageable);
         
         return listaInsumos.map(insumoMapper::toDTO);
     }
@@ -55,6 +55,7 @@ public class CatalogoInsumoService implements ICatalogoInsumoService{
                 .nombre(dto.getNombre())
                 .unidadMedida(dto.getUnidadMedida())
                 .costoUnitario(dto.getCostoUnitario())
+                .stock(dto.getStock() != null ? dto.getStock() : BigDecimal.ZERO)
                 .build();
         
         CatalogoInsumo insumo = insumoMapper.toEntity(insumoDTO);
@@ -79,6 +80,7 @@ public class CatalogoInsumoService implements ICatalogoInsumoService{
                 .nombre(insumoEditado.getNombre() != null ? insumoEditado.getNombre() : insumoDTO.getNombre())
                 .unidadMedida(insumoEditado.getUnidadMedida() != null ? insumoEditado.getUnidadMedida() : insumoDTO.getUnidadMedida())
                 .costoUnitario(insumoEditado.getCostoUnitario() != null ? insumoEditado.getCostoUnitario() : insumoDTO.getCostoUnitario())
+                .stock(insumoEditado.getStock() != null ? insumoEditado.getStock() : insumoDTO.getStock())
                 .build();
         
         return insumoMapper.toDTO(insumoRepository.save(insumoMapper.toEntity(insumoActualizado)));
@@ -86,9 +88,10 @@ public class CatalogoInsumoService implements ICatalogoInsumoService{
     }
 
     @Override
+    @Transactional
     public void eliminarInsumo(Integer id) {
         if(!insumoRepository.existsById(id)){
-            throw new RuntimeException("No se puede eliminar: el insumo con id " + id);
+            throw new ResourceNotFoundException("No se puede eliminar: el insumo con id " + id + " no existe.");
         }
         insumoRepository.deleteById(id);
     }

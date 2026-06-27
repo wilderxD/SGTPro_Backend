@@ -2,6 +2,7 @@ package com.example.sgtpro.SGTPRO.mapper;
 
 import com.example.sgtpro.SGTPRO.dto.CatalogoInsumoDTO;
 import com.example.sgtpro.SGTPRO.entity.CatalogoInsumo;
+import java.math.BigDecimal;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -14,6 +15,7 @@ public class CatalogoInsumoMapper {
         insumo.setCodigoInterno(dto.getCodigoInterno());
         insumo.setUnidadMedida(dto.getUnidadMedida());
         insumo.setCostoUnitario(dto.getCostoUnitario());
+        insumo.setStock(dto.getStock() != null ? dto.getStock() : BigDecimal.ZERO);
         
         return insumo;
     }
@@ -25,6 +27,7 @@ public class CatalogoInsumoMapper {
                 .nombre(insumo.getNombre())
                 .unidadMedida(insumo.getUnidadMedida())
                 .costoUnitario(insumo.getCostoUnitario())
+                .stock(insumo.getStock())
                 .build();
     }
 }

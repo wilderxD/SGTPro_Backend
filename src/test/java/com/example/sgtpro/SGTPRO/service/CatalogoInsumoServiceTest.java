@@ -182,14 +182,14 @@ public class CatalogoInsumoServiceTest {
     }
 
     @Test
-    void eliminarInsumo_DebeLanzarRuntimeException_CuandoNoExiste() {
+    void eliminarInsumo_DebeLanzarResourceNotFound_CuandoNoExiste() {
         when(insumoRepository.existsById(99)).thenReturn(false);
 
-        RuntimeException excepcion = assertThrows(RuntimeException.class, () -> {
+        ResourceNotFoundException excepcion = assertThrows(ResourceNotFoundException.class, () -> {
             catalogoInsumoService.eliminarInsumo(99);
         });
 
-        assertEquals("No se puede eliminar: el insumo con id 99", excepcion.getMessage());
+        assertEquals("No se puede eliminar: el insumo con id 99 no existe.", excepcion.getMessage());
         verify(insumoRepository, never()).deleteById(anyInt());
     }
 }

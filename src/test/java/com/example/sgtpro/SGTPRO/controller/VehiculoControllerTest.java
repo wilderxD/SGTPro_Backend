@@ -80,7 +80,7 @@ public class VehiculoControllerTest {
         Pageable miOrden = PageRequest.of(0, 8);
         Page<VehiculoDTO> paginaVehiculos = new PageImpl<>(List.of(vehiculoDTOPrueba), miOrden, 1);
 
-        when(vehiculoService.ObtenerTodosPaginado(miOrden)).thenReturn(paginaVehiculos);
+        when(vehiculoService.obtenerTodosPaginado(miOrden)).thenReturn(paginaVehiculos);
 
         mockMvc.perform(get("/api/vehiculos/paginado")
                 .param("page", "0") 
@@ -90,7 +90,7 @@ public class VehiculoControllerTest {
                 .andExpect(jsonPath("$.content[0].placa").value("BAZ-911"))
                 .andExpect(jsonPath("$.totalElements").value(1));
 
-        verify(vehiculoService).ObtenerTodosPaginado(miOrden);
+        verify(vehiculoService).obtenerTodosPaginado(miOrden);
     }
     
     @Test

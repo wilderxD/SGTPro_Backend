@@ -1,5 +1,6 @@
 package com.example.sgtpro.SGTPRO.service;
 
+import com.example.sgtpro.SGTPRO.dto.RolDTO;
 import com.example.sgtpro.SGTPRO.dto.UsuarioDTO;
 import com.example.sgtpro.SGTPRO.entity.Rol;
 import com.example.sgtpro.SGTPRO.entity.Usuario;
@@ -69,12 +70,13 @@ public class UsuarioServiceTest {
         usuarioPrueba.setPassword("hash_simulado");
         usuarioPrueba.setRol(rolPrueba);
 
+        RolDTO rolDTO = new RolDTO(rolPrueba.getIdRol(), rolPrueba.getNombre(), rolPrueba.getDescripcion());
         usuarioDTOPrueba = UsuarioDTO.builder()
                 .idUsuario(1)
                 .correo("logistica@forli.com.pe")
                 .nombreCompleto("Juan Perez")
                 .password("123456") 
-                .rol(rolPrueba)
+                .rol(rolDTO)
                 .build();
     }
 
@@ -171,12 +173,11 @@ public class UsuarioServiceTest {
             usuarioService.buscarPorId(99);
         });
 
-        assertEquals("Usuario no encoantrado con id: 99", excepcion.getMessage());
+        assertEquals("Usuario no encontrado con id: 99", excepcion.getMessage());
     }
 
     @Test
     void actualizarUsuario_DebeActualizarYRetornar_CuandoExiste() {
-        // GIVEN
         UsuarioDTO datosEditados = UsuarioDTO.builder()
                 .nombreCompleto("Juan Perez Editado")
                 .build();
@@ -188,13 +189,8 @@ public class UsuarioServiceTest {
                 .build();
 
         when(usuarioRepository.findById(1)).thenReturn(Optional.of(usuarioPrueba));
-        
-        when(usuarioMapper.toDTO(any(Usuario.class)))
-                .thenReturn(usuarioDTOPrueba) 
-                .thenReturn(dtoFinal);        
-
-        when(usuarioMapper.toEntity(any(UsuarioDTO.class))).thenReturn(usuarioPrueba);
         when(usuarioRepository.save(any(Usuario.class))).thenReturn(usuarioPrueba);
+        when(usuarioMapper.toDTO(any(Usuario.class))).thenReturn(dtoFinal);
 
         UsuarioDTO resultado = usuarioService.actualizarUsuario(1, datosEditados);
 
@@ -214,10 +210,10 @@ public class UsuarioServiceTest {
     }
 
     @Test
-    void eliminarPorID_DebeLanzarRuntimeException_CuandoNoExiste() {
+    void eliminarPorID_DebeLanzarResourceNotFound_CuandoNoExiste() {
         when(usuarioRepository.existsById(99)).thenReturn(false);
 
-        RuntimeException excepcion = assertThrows(RuntimeException.class, () -> {
+        ResourceNotFoundException excepcion = assertThrows(ResourceNotFoundException.class, () -> {
             usuarioService.eliminarPorID(99);
         });
 
